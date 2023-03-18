@@ -111,7 +111,8 @@ def load_model(
     device : Union[str, torch.device]
         the PyTorch device to put the model into
     download_root: str
-        path to download the model files; by default, it uses "~/.cache/whisper"
+        path to download the model files; by default, it uses "~/.cache/whisper".
+        Or, if set, the WHISPER_MODELS_DIR path.
     in_memory: bool
         whether to preload the model weights into host memory
 
@@ -125,7 +126,10 @@ def load_model(
         device = "cuda" if torch.cuda.is_available() else "cpu"
     if download_root is None:
         default = os.path.join(os.path.expanduser("~"), ".cache")
-        download_root = os.path.join(os.getenv("XDG_CACHE_HOME", default), "whisper")
+        if os.getenv("WHISPER_MODELS_DIR") is None:
+            download_root = os.path.join(os.getenv("XDG_CACHE_HOME", default), "whisper")
+        else:
+            download_root = os.getenv("WHISPER_MODELS_DIR", default)
 
     if name in _MODELS:
         checkpoint_file = _download(_MODELS[name], download_root, in_memory)
